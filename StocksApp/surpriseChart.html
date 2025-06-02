@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div id="container" style="height: 380px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let host = "https://as3-express-blynbbpwha-wl.a.run.app";
+    let url = new URL(document.URL);
+    let urlsp = url.searchParams;
+    const ticker = encodeURI(urlsp.get("ticker"));
+
+    axios.request({
+        url: `${host}/earnings`,
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        params: { ticker: ticker },
+    })
+    .then((response) => {
+        let actual = [];
+        let estimate = [];
+        let xaxis = [];
+        response = response.data;
+        for (let i = 0; i < response.length; i++) {
+            let r = response[i];
+            actual.push(r.actual);
+            estimate.push(r.estimate);
+            xaxis.push(`${r.period}<br/>Surprise:${r.surprise}`);
+        }
+    
+        Highcharts.chart('container', {
+            chart: {
+                type: 'line',
+            },
+            title: {
+                text: 'EPS Historical Surprises',
+            },
+            subtitle: {
+                text: '<b>EPS Historical Surprises</b>',
+            },
+            tooltip: {
+                shared: true
+            },
+            xAxis: {
+                categories: xaxis,
+                labels: {
+                    useHTML: true
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Quarterly EPS',
+                },
+            },
+            series: [
+                {
+                    name: 'Actual',
+                    data: actual,
+                    type: 'line',
+                },
+                {
+                    name: 'Estimate',
+                    data: estimate,
+                    type: 'line',
+                },
+            ],
+        });
+    });
+    </script>
+</body>
+</html>

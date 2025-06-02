@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div id="container" style="height: 380px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let host = "https://as3-express-blynbbpwha-wl.a.run.app";
+let url = new URL(document.URL);
+let urlsp = url.searchParams;
+const ticker = encodeURI(urlsp.get("ticker"));
+
+axios
+.request({
+    url: `${host}/trends`,
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    params: { ticker: ticker },
+})
+.then((response) => {
+    response = response.data;
+    let strongbuy = [];
+    let buy = [];
+    let hold = [];
+    let sell = [];
+    let strongsell = [];
+    let xaxis = [];
+    for (let i = 0; i < response.length; i++) {
+      let r = response[i];
+      strongbuy.push(r.strongBuy);
+      buy.push(r.buy);
+      hold.push(r.hold);
+      sell.push(r.sell);
+      strongsell.push(r.strongSell);
+      xaxis.push(r.period);
+    }
+    
+    Highcharts.chart('container', {
+      chart: {
+        type: 'column',
+      },
+      title: {
+        text: '',
+      },
+      subtitle: {
+        text: '<b>Recommendation Trends</b>',
+      },
+      xAxis: {
+        categories: xaxis,
+      },
+      yAxis: {
+        title: {
+          text: '#Analysis',
+        },
+      },
+      plotOptions: {
+        column: {
+          stacking: 'normal',
+          dataLabels: {
+            enabled: true,
+          },
+        },
+      },
+      series: [
+        {
+          name: 'Strong Buy',
+          type: 'column',
+          data: strongbuy,
+          color: 'darkgreen',
+        },
+        {
+          name: 'Buy',
+          type: 'column',
+          data: buy,
+          color: 'lightgreen',
+        },
+        {
+          name: 'Hold',
+          type: 'column',
+          data: hold,
+          color: 'yellow',
+        },
+        {
+          name: 'Sell',
+          type: 'column',
+          data: sell,
+          color: 'red',
+        },
+        {
+          name: 'Strong Sell',
+          type: 'column',
+          data: strongsell,
+          color: 'darkred',
+        },
+      ],
+    });
+})
+</script>
+</body>
+</html>
